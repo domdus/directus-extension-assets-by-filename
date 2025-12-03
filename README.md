@@ -15,7 +15,7 @@ You can do this:
 ```
 Or shorter:
 ```
-/assets/_/fd/product-photo.jpg?width=800
+/assets/_/t/product-photo.jpg?width=800
 ```
 
 ## Features
