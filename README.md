@@ -13,7 +13,7 @@ You can do this:
 ```
 /assets/field/title/my-product-image?width=800
 ```
-Or this (shorter):
+Or shorter:
 ```
 /assets/_/fd/product-photo.jpg?width=800
 ```
@@ -27,6 +27,16 @@ Or this (shorter):
 - **Short URLs**: Provides both full (`/field/`) and short (`/_/`) endpoint paths
 
 ## Installation
+
+### Via Directus Marketplace
+
+1. Open your Directus project
+2. Navigate to **Settings** → **Extensions**
+3. Click **Browse Marketplace**
+4. Search for "Assets by Filename"
+5. Click **Install**
+
+### Manual Installation
 
 1. Build the extension:
 ```bash
@@ -89,13 +99,6 @@ All standard Directus transformation parameters work with these endpoints. Simpl
 
 All standard Directus transformation parameters work:
 - `width`, `height`, `fit`, `quality`, `format`, `preset`, `transforms`, `key`, `download`
-
-## Use Cases
-
-- **Human-Readable URLs**: Use meaningful filenames instead of UUIDs
-- **SEO-Friendly URLs**: Create URLs with descriptive titles
-- **Legacy System Migration**: Map old filename-based URLs to Directus files
-- **Simplified API**: Access files by display names without looking up file IDs first
 
 ## How It Works
 
