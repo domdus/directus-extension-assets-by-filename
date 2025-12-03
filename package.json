@@ -1,0 +1,33 @@
+{
+	"name": "directus-extension-assets-by-filename",
+	"description": "Retrieve files by filename_disk, title or filename_download instead of UID",
+	"icon": "image",
+	"version": "1.0.0",
+	"license": "MIT",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-extension-endpoint",
+		"assets-by-filename",
+		"assets",
+		"filename"
+	],
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"directus:extension": {
+		"type": "endpoint",
+		"path": "dist/index.js",
+		"source": "src/index.js",
+		"host": "^10.10.0"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"link": "directus-extension link"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "12.1.0"
+	}
+}
