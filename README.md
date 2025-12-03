@@ -11,11 +11,11 @@ Instead of this:
 
 You can do this:
 ```
-/assets/field/title/my-product-image?width=800
+/assets/field/filename_disk/product-photo.jpg?width=800
 ```
 Or shorter:
 ```
-/assets/_/t/product-photo.jpg?width=800
+/assets/_/fd/product-photo.jpg?width=800
 ```
 
 ## Features
