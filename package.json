@@ -1,6 +1,6 @@
 {
 	"name": "directus-extension-assets-by-filename",
-	"description": "Retrieve files by filename_disk, title or filename_download instead of UID",
+	"description": "Retrieve files by filename_disk instead of UID",
 	"icon": "image",
 	"version": "1.0.0",
 	"license": "MIT",

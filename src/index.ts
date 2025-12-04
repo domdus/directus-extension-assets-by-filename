@@ -1,6 +1,5 @@
-import { request, IncomingMessage, ServerResponse } from 'http';
+import { request, IncomingMessage } from 'http';
 import type { Router, Request, Response } from 'express';
-import type { Services, Schema } from '@directus/types';
 
 // Blacklist of Directus native endpoints that cannot be used as custom endpoint paths
 const RESERVED_ENDPOINTS = [
@@ -57,8 +56,11 @@ interface EndpointContext {
 		HOST?: string;
 		[key: string]: string | number | undefined;
 	};
-	services: Services;
-	getSchema: () => Promise<Schema>;
+	services: {
+		FilesService: new (options: { schema: Record<string, any>; accountability?: any }) => any;
+		[key: string]: any;
+	};
+	getSchema: () => Promise<Record<string, any>>;
 }
 
 interface DirectusRequest extends Request {
@@ -124,14 +126,14 @@ export default {
 				(proxyRes: IncomingMessage) => {
 					// Forward status code
 					res.statusCode = proxyRes.statusCode || 200;
-					res.statusMessage = proxyRes.statusMessage;
+					res.statusMessage = proxyRes.statusMessage || 'OK';
 					
 					// Forward all headers (including cache headers)
 					// This preserves the cache strategy from the default endpoint
 					const responseHeaders = proxyRes.headers;
 					for (const [key, value] of Object.entries(responseHeaders)) {
-						// Skip headers that shouldn't be forwarded
-						if (key.toLowerCase() !== 'connection' && key.toLowerCase() !== 'transfer-encoding') {
+						// Skip headers that shouldn't be forwarded or are undefined
+						if (value !== undefined && key.toLowerCase() !== 'connection' && key.toLowerCase() !== 'transfer-encoding') {
 							res.setHeader(key, value);
 						}
 					}
@@ -165,7 +167,7 @@ export default {
 		async function handleFileLookup(
 			req: DirectusRequest,
 			res: Response,
-			fieldName: 'filename_disk' | 'title' | 'filename_download',
+			fieldName: 'filename_disk',
 			value: string
 		): Promise<void> {
 			// Validate value is not empty
@@ -223,41 +225,16 @@ export default {
 		}
 
 		if (process.env.ASSETS_FILENAME_ENDPOINT_PATH) {
-			// Endpoint: /a/fd/:filename
+			// Endpoint: /a/:filename
 			router.get(`${assetsPathSeparator}/:filename`, async (req: DirectusRequest, res: Response) => {
 				const filename = req.params['filename'] as string;
 				await handleFileLookup(req, res, 'filename_disk', filename);
 			});
-
-			// Endpoint: /a/t/:filename
-			router.get(`${assetsPathSeparator}/t/:filename`, async (req: DirectusRequest, res: Response) => {
-				const filename = req.params['filename'] as string;
-				await handleFileLookup(req, res, 'title', filename);
-			});
-
-			// Endpoint: /a/d/:filename
-			router.get(`${assetsPathSeparator}/d/:filename`, async (req: DirectusRequest, res: Response) => {
-				const filename = req.params['filename'] as string;
-				await handleFileLookup(req, res, 'filename_download', filename);
-			});
 		} else {
-			// Shorter variants: /_/ instead of /field/
-			// Endpoint: /_/fd/:filename
-			router.get(`${assetsPathSeparator}/fd/:filename`, async (req: DirectusRequest, res: Response) => {
+			// Endpoint: /_/_/:filename
+			router.get(`${assetsPathSeparator}/_/:filename`, async (req: DirectusRequest, res: Response) => {
 				const filename = req.params['filename'] as string;
 				await handleFileLookup(req, res, 'filename_disk', filename);
-			});
-
-			// Endpoint: /_/f/:filename
-			router.get(`${assetsPathSeparator}/t/:filename`, async (req: DirectusRequest, res: Response) => {
-				const filename = req.params['filename'] as string;
-				await handleFileLookup(req, res, 'title', filename);
-			});
-
-			// Endpoint: /_/filename_download/:filename
-			router.get(`${assetsPathSeparator}/d/:filename`, async (req: DirectusRequest, res: Response) => {
-				const filename = req.params['filename'] as string;
-				await handleFileLookup(req, res, 'filename_download', filename);
 			});
 		}
 	}

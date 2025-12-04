@@ -1,26 +1,26 @@
 # Directus Assets by Filename Extension
 
-A Directus endpoint extension that allows you to retrieve files by filename, title, or filename_download instead of requiring the file UUID. Perfect for creating human-readable URLs and simplifying file access in your applications.
+A Directus endpoint extension that allows you to retrieve files by filename instead of requiring the file UID. Perfect for creating human-readable URLs and simplifying file access.
 
 ## Why Use This Extension?
 
-Instead of this:
+Instead of requesting via file uid:
 ```
 /assets/550e8400-e29b-41d4-a716-446655440000?width=800
 ```
 
-You can do this:
+You can request with filename_disk:
 ```
-/assets/_/fd/product-photo.jpg?width=800
+/assets/_/_/product-photo.jpg?width=800
 ```
-Or even shorter with custom env variable:
+And make it even shorter with a custom env variable:
 ```
 /a/product-photo.jpg?width=800
 ```
 
 ## Features
 
-- **Multiple Lookup Methods**: Query files by `filename_disk`, `title`, or `filename_download`
+- **Filename Lookup**: Query files by `filename_disk`
 - **Full Compatibility**: All transformation parameters (width, height, presets, etc.) work exactly like the default assets endpoint
 - **Permission Respect**: Uses Directus's accountability system to ensure proper permission checks
 - **Cache Preservation**: Inherits complete caching behavior from Directus's default assets endpoint
@@ -45,40 +45,35 @@ npm run build
 
 2. Copy the `dist` folder to your Directus extensions directory:
 ```
-directus/extensions/endpoints/directus-endpoint-assets-by-filename/
+directus/extensions/directus-extension-assets-by-filename/
 ```
 
 3. Restart your Directus instance
 
 ## Usage
 
-Once installed, the extension automatically adds new endpoints. No additional configuration is required, but you can customize the endpoint path using the environment variable above.
+Once installed, the extension automatically adds new endpoints. No additional configuration is required, but you can customize the endpoint path using a custom environment variable.
 
 ### Using the Endpoints
 
 The extension provides short URL patterns:
 
-**Default**:
-- `/assets/_/fd/:filename_disk` - Lookup by `filename_disk`
-- `/assets/_/t/:title` - Lookup by `title`
-- `/assets/_/d/:filename_download` - Lookup by `filename_download`
+- `/assets/_/_/:filename_disk` - Lookup by `filename_disk`
 
 **Custom** (when `ASSETS_FILENAME_ENDPOINT_PATH` is set, e.g., to `a`):
-- `/a/:filename_disk` - Lookup by `filename_disk` (default route without `/fd`)
-- `/a/t/:title` - Lookup by `title`
-- `/a/d/:filename_donwload` - Lookup by `filename_download`
+- `/a/:filename_disk` - Lookup by `filename_disk`
 
 ### Adding Transformations
 
 All standard Directus transformation parameters work with these endpoints. Simply append them as query parameters:
 
 ```
-/assets/_/t/my-image?width=800&height=600&fit=cover&quality=90&format=webp
+/assets/_/_/my-image.jpg?width=800&height=600&fit=cover&quality=90&format=webp
 ```
 
 **Custom:**
 ```
-/a/t/my-image?width=800&height=600&fit=cover&quality=90&format=webp
+/a/my-image.jpg?width=800&height=600&fit=cover&quality=90&format=webp
 ```
 
 
@@ -89,10 +84,10 @@ All standard Directus transformation parameters work with these endpoints. Simpl
 You can customize the endpoint path using the `ASSETS_FILENAME_ENDPOINT_PATH` environment variable:
   
 - **Set to custom value** (e.g., `ASSETS_FILENAME_ENDPOINT_PATH=mypath`): 
-  - Endpoint ID becomes the custom value (e.g., `mypath`)
+  - Endpoint becomes available under `/mypath`
   - Routes have no prefix, making URLs even shorter
   - Example: `https://directus_domain/mypath/product-photo.jpg`
-  - **Paths names not allowed** (reserved by Directus): 
+  - **Path names not allowed** (reserved by Directus): 
     `items`, `users`, `roles`, `permissions`, `files`, `collections`, `relations`, `fields`, `settings`, `activity`, `revisions`, `presets`, `flows`, `operations`, `webhooks`, `dashboards`, `panels`, `translations`, `server`, `extensions`, `auth`, `graphql`, `static`, `folders`, `notifications`, `utils`, `schema`, `assets`
   
 > **⚠️ Important:**  
@@ -102,26 +97,14 @@ You can customize the endpoint path using the `ASSETS_FILENAME_ENDPOINT_PATH` en
 ## Examples
 
 ```html
-<!-- Using title -->
-<img src="/assets/_/t/product-hero-image?width=800&height=600&format=webp" />
-
-<!-- Using filename_download -->
-<img src="/assets/_/d/product-photo.jpg?width=1920" />
-
 <!-- Using filename_disk -->
-<img src="/assets/_/fd/ccc1123d-a62a-454e-82d1-1c8a5dfc1acd.png" />
+<img src="/assets/_/_/ccc1123d-a62a-454e-82d1-1c8a5dfc1acd.png" />
 ```
 
 **Custom** (with `ASSETS_FILENAME_ENDPOINT_PATH=a`):
 ```html
-<!-- Using title -->
-<img src="/mypath/t/product-hero-image?width=800&height=600&format=webp" />
-
-<!-- Using filename_download -->
-<img src="/mypath/d/product-photo.jpg?width=1920" />
-
-<!-- Using filename_disk (shortest) -->
-<img src="/mypath/product-photo.jpg?width=1920" />
+<!-- Using filename_disk -->
+<img src="/a/product-photo.jpg?width=1920" />
 ```
 
 All standard Directus transformation parameters work:
