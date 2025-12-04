@@ -1,6 +1,6 @@
 # Directus Assets by Filename Extension
 
-A Directus endpoint extension that allows you to retrieve files by filename instead of requiring the file UID. Perfect for creating human-readable URLs and simplifying file access.
+A Directus endpoint extension that allows you to retrieve files by filename instead of requiring the file UID.
 
 ## Why Use This Extension?
 
