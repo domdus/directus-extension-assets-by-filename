@@ -13,7 +13,7 @@ You can do this:
 ```
 /assets/_/fd/product-photo.jpg?width=800
 ```
-Or even shorter with custom endpoint:
+Or even shorter with custom env variable:
 ```
 /a/product-photo.jpg?width=800
 ```
