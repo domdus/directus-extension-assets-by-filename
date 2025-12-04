@@ -45,7 +45,7 @@ npm run build
 
 2. Copy the `dist` folder to your Directus extensions directory:
 ```
-directus/extensions/directus-extension-assets-by-filename/
+/extensions/directus-extension-assets-by-filename/
 ```
 
 3. Restart your Directus instance
