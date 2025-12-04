@@ -1,8 +1,61 @@
 import { request } from 'http';
 
+// Blacklist of Directus native endpoints that cannot be used as custom endpoint paths
+const RESERVED_ENDPOINTS = [
+	'items',
+	'users',
+	'roles',
+	'permissions',
+	'files',
+	'collections',
+	'relations',
+	'fields',
+	'settings',
+	'activity',
+	'revisions',
+	'presets',
+	'flows',
+	'operations',
+	'webhooks',
+	'dashboards',
+	'panels',
+	'translations',
+	'server',
+	'extensions',
+	'auth',
+	'graphql',
+	'static',
+	'folders',
+	'notifications',
+	'utils',
+	'schema',
+	'assets', // Reserved as the default assets endpoint
+];
+
+// Validate endpoint path against blacklist
+function validateEndpointPath(endpointPath) {
+	if (!endpointPath) {
+		return; // No custom path set, will use default 'assets' which is acceptable
+	}
+	
+	const normalizedPath = endpointPath.toLowerCase().trim();
+	
+	if (RESERVED_ENDPOINTS.includes(normalizedPath)) {
+		throw new Error(
+			`The endpoint path "${endpointPath}" is reserved by Directus and cannot be used. ` +
+			`Please choose a different value for ASSETS_FILENAME_ENDPOINT_PATH. ` +
+			`Reserved endpoints: ${RESERVED_ENDPOINTS.join(', ')}`
+		);
+	}
+}
+
 export default {
 	id: process.env.ASSETS_FILENAME_ENDPOINT_PATH || 'assets',
 	handler: (router, { env, services, getSchema }) => {
+		// Validate endpoint path on handler initialization
+		const endpointPath = process.env.ASSETS_FILENAME_ENDPOINT_PATH;
+		validateEndpointPath(endpointPath);
+		
 		const assetsPathSeparator = process.env.ASSETS_FILENAME_ENDPOINT_PATH ? '' : '/_';
 		// Proxy function that properly forwards all headers and status codes
 		// This preserves the cache strategy from the default assets endpoint

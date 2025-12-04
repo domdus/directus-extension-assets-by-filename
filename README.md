@@ -24,7 +24,6 @@ Or even shorter with custom endpoint:
 - **Full Compatibility**: All transformation parameters (width, height, presets, etc.) work exactly like the default assets endpoint
 - **Permission Respect**: Uses Directus's accountability system to ensure proper permission checks
 - **Cache Preservation**: Inherits complete caching behavior from Directus's default assets endpoint
-- **Short URLs**: Provides short (`/_/`) endpoint paths, with option to customize endpoint path
 - **Configurable Endpoint**: Customize the base endpoint path via environment variable for even shorter URLs
 
 ## Installation
@@ -51,27 +50,6 @@ directus/extensions/endpoints/directus-endpoint-assets-by-filename/
 
 3. Restart your Directus instance
 
-## Configuration
-
-### Environment Variables
-
-You can customize the endpoint path using the `ASSETS_FILENAME_ENDPOINT_PATH` environment variable:
-
-- **Not set (default)**: Endpoint ID is `assets`, routes use `/_/` prefix
-  - Example: `https://directus_domain/assets/_/fd/product-photo.jpg`
-  
-- **Set to custom value** (e.g., `ASSETS_FILENAME_ENDPOINT_PATH=a`): 
-  - Endpoint ID becomes the custom value (e.g., `a`)
-  - Routes have no prefix, making URLs even shorter
-  - Example: `https://directus_domain/a/product-photo.jpg`
-
-### Setting the Environment Variable
-
-Add to your `.env` file or environment configuration:
-```bash
-ASSETS_FILENAME_ENDPOINT_PATH=a
-```
-
 ## Usage
 
 Once installed, the extension automatically adds new endpoints. No additional configuration is required, but you can customize the endpoint path using the environment variable above.
@@ -80,28 +58,49 @@ Once installed, the extension automatically adds new endpoints. No additional co
 
 The extension provides short URL patterns:
 
-**Default mode** (when `ASSETS_FILENAME_ENDPOINT_PATH` is not set):
-- `/assets/_/fd/:filename` - Lookup by `filename_disk`
-- `/assets/_/t/:filename` - Lookup by `title`
-- `/assets/_/d/:filename` - Lookup by `filename_download`
+**Default**:
+- `/assets/_/fd/:filename_disk` - Lookup by `filename_disk`
+- `/assets/_/t/:title` - Lookup by `title`
+- `/assets/_/d/:filename_download` - Lookup by `filename_download`
 
-**Custom mode** (when `ASSETS_FILENAME_ENDPOINT_PATH` is set, e.g., to `a`):
-- `/a/:filename` - Lookup by `filename_disk`
-- `/a/t/:filename` - Lookup by `title`
-- `/a/d/:filename` - Lookup by `filename_download`
+**Custom** (when `ASSETS_FILENAME_ENDPOINT_PATH` is set, e.g., to `a`):
+- `/a/:filename_disk` - Lookup by `filename_disk` (default route without `/fd`)
+- `/a/t/:title` - Lookup by `title`
+- `/a/d/:filename_donwload` - Lookup by `filename_download`
 
 ### Adding Transformations
 
 All standard Directus transformation parameters work with these endpoints. Simply append them as query parameters:
 
-**Default mode:**
 ```
 /assets/_/t/my-image?width=800&height=600&fit=cover&quality=90&format=webp
 ```
 
-### Examples
+**Custom:**
+```
+/a/t/my-image?width=800&height=600&fit=cover&quality=90&format=webp
+```
 
-**Default mode:**
+
+## Configuration
+
+### Environment Variables
+
+You can customize the endpoint path using the `ASSETS_FILENAME_ENDPOINT_PATH` environment variable:
+  
+- **Set to custom value** (e.g., `ASSETS_FILENAME_ENDPOINT_PATH=mypath`): 
+  - Endpoint ID becomes the custom value (e.g., `mypath`)
+  - Routes have no prefix, making URLs even shorter
+  - Example: `https://directus_domain/mypath/product-photo.jpg`
+  - **Paths names not allowed** (reserved by Directus): 
+    `items`, `users`, `roles`, `permissions`, `files`, `collections`, `relations`, `fields`, `settings`, `activity`, `revisions`, `presets`, `flows`, `operations`, `webhooks`, `dashboards`, `panels`, `translations`, `server`, `extensions`, `auth`, `graphql`, `static`, `folders`, `notifications`, `utils`, `schema`, `assets`
+  
+> **⚠️ Important:**  
+> *Make sure your `ASSETS_FILENAME_ENDPOINT_PATH` does not overlap with any endpoint routes used by other endpoint extensions*:  
+  
+
+## Examples
+
 ```html
 <!-- Using title -->
 <img src="/assets/_/t/product-hero-image?width=800&height=600&format=webp" />
@@ -113,16 +112,16 @@ All standard Directus transformation parameters work with these endpoints. Simpl
 <img src="/assets/_/fd/ccc1123d-a62a-454e-82d1-1c8a5dfc1acd.png" />
 ```
 
-**Custom mode** (with `ASSETS_FILENAME_ENDPOINT_PATH=a`):
+**Custom** (with `ASSETS_FILENAME_ENDPOINT_PATH=a`):
 ```html
 <!-- Using title -->
-<img src="/a/t/product-hero-image?width=800&height=600&format=webp" />
+<img src="/mypath/t/product-hero-image?width=800&height=600&format=webp" />
 
 <!-- Using filename_download -->
-<img src="/a/d/product-photo.jpg?width=1920" />
+<img src="/mypath/d/product-photo.jpg?width=1920" />
 
 <!-- Using filename_disk (shortest) -->
-<img src="/a/product-photo.jpg?width=1920" />
+<img src="/mypath/product-photo.jpg?width=1920" />
 ```
 
 All standard Directus transformation parameters work:
