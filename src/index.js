@@ -1,8 +1,9 @@
 import { request } from 'http';
 
 export default {
-	id: 'assets',
+	id: process.env.ASSETS_FILENAME_ENDPOINT_PATH || 'assets',
 	handler: (router, { env, services, getSchema }) => {
+		const assetsPathSeparator = process.env.ASSETS_FILENAME_ENDPOINT_PATH ? '' : '/_';
 		// Proxy function that properly forwards all headers and status codes
 		// This preserves the cache strategy from the default assets endpoint
 		function proxyToAssetsEndpoint(fileId, req, res) {
@@ -141,41 +142,43 @@ export default {
 			}
 		}
 
-		// Endpoint: /field/filename_disk/:filename
-		router.get('/field/filename_disk/:filename', async (req, res) => {
-			const filename = req.params['filename'];
-			await handleFileLookup(req, res, 'filename_disk', filename);
-		});
+		if (process.env.ASSETS_FILENAME_ENDPOINT_PATH) {
+			// Endpoint: /a/fd/:filename
+			router.get(`${assetsPathSeparator}/:filename`, async (req, res) => {
+				const filename = req.params['filename'];
+				await handleFileLookup(req, res, 'filename_disk', filename);
+			});
 
-		// Endpoint: /field/title/:filename
-		router.get('/field/title/:filename', async (req, res) => {
-			const filename = req.params['filename'];
-			await handleFileLookup(req, res, 'title', filename);
-		});
+			// Endpoint: /a/t/:filename
+			router.get(`${assetsPathSeparator}/t/:filename`, async (req, res) => {
+				const filename = req.params['filename'];
+				await handleFileLookup(req, res, 'title', filename);
+			});
 
-		// Endpoint: /field/filename_download/:filename
-		router.get('/field/filename_download/:filename', async (req, res) => {
-			const filename = req.params['filename'];
-			await handleFileLookup(req, res, 'filename_download', filename);
-		});
+			// Endpoint: /a/d/:filename
+			router.get(`${assetsPathSeparator}/d/:filename`, async (req, res) => {
+				const filename = req.params['filename'];
+				await handleFileLookup(req, res, 'filename_download', filename);
+			});
+		} else {
+			// Shorter variants: /_/ instead of /field/
+			// Endpoint: /_/fd/:filename
+			router.get(`${assetsPathSeparator}/fd/:filename`, async (req, res) => {
+				const filename = req.params['filename'];
+				await handleFileLookup(req, res, 'filename_disk', filename);
+			});
 
-		// Shorter variants: /_/ instead of /field/
-		// Endpoint: /_/fd/:filename
-		router.get('/_/fd/:filename', async (req, res) => {
-			const filename = req.params['filename'];
-			await handleFileLookup(req, res, 'filename_disk', filename);
-		});
+			// Endpoint: /_/f/:filename
+			router.get(`${assetsPathSeparator}/t/:filename`, async (req, res) => {
+				const filename = req.params['filename'];
+				await handleFileLookup(req, res, 'title', filename);
+			});
 
-		// Endpoint: /_/f/:filename
-		router.get('/_/t/:filename', async (req, res) => {
-			const filename = req.params['filename'];
-			await handleFileLookup(req, res, 'title', filename);
-		});
-
-		// Endpoint: /_/filename_download/:filename
-		router.get('/_/d/:filename', async (req, res) => {
-			const filename = req.params['filename'];
-			await handleFileLookup(req, res, 'filename_download', filename);
-		});
-	},
+			// Endpoint: /_/filename_download/:filename
+			router.get(`${assetsPathSeparator}/d/:filename`, async (req, res) => {
+				const filename = req.params['filename'];
+				await handleFileLookup(req, res, 'filename_download', filename);
+			});
+		}
+	}
 };

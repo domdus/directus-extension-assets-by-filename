@@ -11,11 +11,11 @@ Instead of this:
 
 You can do this:
 ```
-/assets/field/filename_disk/product-photo.jpg?width=800
-```
-Or shorter:
-```
 /assets/_/fd/product-photo.jpg?width=800
+```
+Or even shorter with custom endpoint:
+```
+/a/product-photo.jpg?width=800
 ```
 
 ## Features
@@ -24,7 +24,8 @@ Or shorter:
 - **Full Compatibility**: All transformation parameters (width, height, presets, etc.) work exactly like the default assets endpoint
 - **Permission Respect**: Uses Directus's accountability system to ensure proper permission checks
 - **Cache Preservation**: Inherits complete caching behavior from Directus's default assets endpoint
-- **Short URLs**: Provides both full (`/field/`) and short (`/_/`) endpoint paths
+- **Short URLs**: Provides short (`/_/`) endpoint paths, with option to customize endpoint path
+- **Configurable Endpoint**: Customize the base endpoint path via environment variable for even shorter URLs
 
 ## Installation
 
@@ -50,42 +51,57 @@ directus/extensions/endpoints/directus-endpoint-assets-by-filename/
 
 3. Restart your Directus instance
 
+## Configuration
+
+### Environment Variables
+
+You can customize the endpoint path using the `ASSETS_FILENAME_ENDPOINT_PATH` environment variable:
+
+- **Not set (default)**: Endpoint ID is `assets`, routes use `/_/` prefix
+  - Example: `https://directus_domain/assets/_/fd/product-photo.jpg`
+  
+- **Set to custom value** (e.g., `ASSETS_FILENAME_ENDPOINT_PATH=a`): 
+  - Endpoint ID becomes the custom value (e.g., `a`)
+  - Routes have no prefix, making URLs even shorter
+  - Example: `https://directus_domain/a/product-photo.jpg`
+
+### Setting the Environment Variable
+
+Add to your `.env` file or environment configuration:
+```bash
+ASSETS_FILENAME_ENDPOINT_PATH=a
+```
+
 ## Usage
 
-Once installed, the extension automatically adds new endpoints under `/assets/`. No additional configuration is required.
+Once installed, the extension automatically adds new endpoints. No additional configuration is required, but you can customize the endpoint path using the environment variable above.
 
 ### Using the Endpoints
 
-The extension provides two URL patterns:
+The extension provides short URL patterns:
 
-1. **Full paths**: `/assets/field/{field_name}/{value}`
-   - More descriptive and self-documenting
-   - Example: `/assets/field/title/my-product-image`
+**Default mode** (when `ASSETS_FILENAME_ENDPOINT_PATH` is not set):
+- `/assets/_/fd/:filename` - Lookup by `filename_disk`
+- `/assets/_/t/:filename` - Lookup by `title`
+- `/assets/_/d/:filename` - Lookup by `filename_download`
 
-2. **Short paths**: `/assets/_/{short_code}/{value}`
-   - Shorter URLs for cleaner code
-   - Example: `/assets/_/t/my-product-image`
+**Custom mode** (when `ASSETS_FILENAME_ENDPOINT_PATH` is set, e.g., to `a`):
+- `/a/:filename` - Lookup by `filename_disk`
+- `/a/t/:filename` - Lookup by `title`
+- `/a/d/:filename` - Lookup by `filename_download`
 
 ### Adding Transformations
 
 All standard Directus transformation parameters work with these endpoints. Simply append them as query parameters:
 
+**Default mode:**
 ```
 /assets/_/t/my-image?width=800&height=600&fit=cover&quality=90&format=webp
 ```
 
-## Quick Start
-
-### Available Endpoints
-
-| Field | Full Path | Short Path |
-|-------|-----------|------------|
-| `filename_disk` | `/assets/field/filename_disk/:filename` | `/assets/_/fd/:filename` |
-| `title` | `/assets/field/title/:filename` | `/assets/_/t/:filename` |
-| `filename_download` | `/assets/field/filename_download/:filename` | `/assets/_/d/:filename` |
-
 ### Examples
 
+**Default mode:**
 ```html
 <!-- Using title -->
 <img src="/assets/_/t/product-hero-image?width=800&height=600&format=webp" />
@@ -95,6 +111,18 @@ All standard Directus transformation parameters work with these endpoints. Simpl
 
 <!-- Using filename_disk -->
 <img src="/assets/_/fd/ccc1123d-a62a-454e-82d1-1c8a5dfc1acd.png" />
+```
+
+**Custom mode** (with `ASSETS_FILENAME_ENDPOINT_PATH=a`):
+```html
+<!-- Using title -->
+<img src="/a/t/product-hero-image?width=800&height=600&format=webp" />
+
+<!-- Using filename_download -->
+<img src="/a/d/product-photo.jpg?width=1920" />
+
+<!-- Using filename_disk (shortest) -->
+<img src="/a/product-photo.jpg?width=1920" />
 ```
 
 All standard Directus transformation parameters work:
