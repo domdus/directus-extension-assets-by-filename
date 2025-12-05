@@ -101,7 +101,7 @@ You can customize the endpoint path using the `ASSETS_FILENAME_ENDPOINT_PATH` en
 <img src="/assets/_/_/ccc1123d-a62a-454e-82d1-1c8a5dfc1acd.png" />
 ```
 
-**Custom** (with `ASSETS_FILENAME_ENDPOINT_PATH=a`):
+**Custom** (with `ASSETS_FILENAME_ENDPOINT_PATH=mypath`):
 ```html
 <!-- Using filename_disk -->
 <img src="/mypath/product-photo.jpg?width=1920" />
