@@ -1,10 +1,10 @@
 # Directus Assets by Filename Extension
 
-A Directus endpoint extension that allows you to retrieve files by filename instead of requiring the file UID.
+A Directus endpoint extension that allows you to retrieve files by filename instead of requiring the file UUID.
 
 ## Why Use This Extension?
 
-Instead of requesting via file uid:
+Instead of requesting via file uuid:
 ```
 /assets/550e8400-e29b-41d4-a716-446655440000?width=800
 ```
@@ -114,7 +114,7 @@ All standard Directus transformation parameters work:
 
 1. Looks up the file in `directus_files` by the specified field
 2. Checks permissions using Directus's FilesService
-3. Proxies to the default `/assets/:uid` endpoint with all query parameters preserved
+3. Proxies to the default `/assets/:uuid` endpoint with all query parameters preserved
 4. Forwards all headers, status codes, and response body (preserving cache behavior)
 
 ## Error Handling
