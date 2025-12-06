@@ -2,7 +2,7 @@
 	"name": "directus-extension-assets-by-filename",
 	"description": "Retrieve files by filename_disk instead of UID",
 	"icon": "image",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"license": "MIT",
 	"keywords": [
 		"directus",
