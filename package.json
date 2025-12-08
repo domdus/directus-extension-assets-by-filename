@@ -20,7 +20,22 @@
 		"type": "endpoint",
 		"path": "dist/index.js",
 		"source": "src/index.ts",
-		"host": "^11.0.0"
+		"host": "^11.0.0",
+		"sandbox": {
+			"enabled": true,
+			"requestedScopes": {
+				"log": {},
+				"request": {
+					"methods": ["GET"],
+					"urls": [
+						"http://localhost:*/*",
+						"http://127.0.0.1:*/*",
+						"https://localhost:*/*",
+						"https://127.0.0.1:*/*"
+					]
+				}
+			}
+		}
 	},
 	"repository": {
 		"type": "git",

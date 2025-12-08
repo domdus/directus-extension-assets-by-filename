@@ -1,4 +1,5 @@
-import { request, IncomingMessage } from 'http';
+/// <reference types="@directus/extensions/api.d.ts" />
+import { request as httpRequest, log } from 'directus:api';
 import type { Router, Request, Response } from 'express';
 
 // Blacklist of Directus native endpoints that cannot be used as custom endpoint paths
@@ -82,7 +83,7 @@ export default {
 		
 		// Proxy function that properly forwards all headers and status codes
 		// This preserves the cache strategy from the default assets endpoint
-		function proxyToAssetsEndpoint(fileId: string, req: DirectusRequest, res: Response): void {
+		async function proxyToAssetsEndpoint(fileId: string, req: DirectusRequest, res: Response): Promise<void> {
 			// Parse host and port from request or env vars
 			// Since we're proxying internally, use the request's host or localhost
 			let hostname = 'localhost';
@@ -110,42 +111,62 @@ export default {
 				}
 			}
 			
-			// Create headers object, excluding host to avoid conflicts
-			const headers: Record<string, string | string[] | undefined> = { ...req.headers };
-			delete headers.host;
+			// Build the full URL for the sandbox request function
+			const protocol = hostname === 'localhost' || hostname === '127.0.0.1' ? 'http' : 'https';
+			const url = `${protocol}://${hostname}:${port}${path}`;
 			
-			// Use options object format to avoid URL parsing issues
-			const proxyReq = request(
-				{
-					hostname: hostname,
-					port: port,
-					path: path,
-					method: req.method,
-					headers: headers as Record<string, string>,
-				},
-				(proxyRes: IncomingMessage) => {
-					// Forward status code
-					res.statusCode = proxyRes.statusCode || 200;
-					res.statusMessage = proxyRes.statusMessage || 'OK';
-					
-					// Forward all headers (including cache headers)
-					// This preserves the cache strategy from the default endpoint
-					const responseHeaders = proxyRes.headers;
-					for (const [key, value] of Object.entries(responseHeaders)) {
-						// Skip headers that shouldn't be forwarded or are undefined
+			// Create headers object, excluding host to avoid conflicts
+			const headers: Record<string, string> = {};
+			for (const [key, value] of Object.entries(req.headers)) {
+				if (key.toLowerCase() !== 'host' && value !== undefined) {
+					// Convert header values to strings (sandbox request expects string headers)
+					if (Array.isArray(value)) {
+						headers[key] = value.join(', ');
+					} else {
+						headers[key] = String(value);
+					}
+				}
+			}
+			
+			try {
+				// Use sandbox's request function (returns Promise with response object)
+				const proxyRes = await httpRequest(url, {
+					method: req.method || 'GET',
+					headers: headers,
+				});
+				
+				// Forward status code
+				res.statusCode = proxyRes.status || 200;
+				res.statusMessage = proxyRes.statusText || 'OK';
+				
+				// Forward all headers (including cache headers)
+				// This preserves the cache strategy from the default endpoint
+				if (proxyRes.headers) {
+					for (const [key, value] of Object.entries(proxyRes.headers)) {
+						// Skip headers that shouldn't be forwarded
 						if (value !== undefined && key.toLowerCase() !== 'connection' && key.toLowerCase() !== 'transfer-encoding') {
-							res.setHeader(key, value);
+							res.setHeader(key, String(value));
 						}
 					}
-					
-					// Pipe the response body
-					proxyRes.pipe(res);
 				}
-			);
-			
-			// Handle proxy request errors
-			proxyReq.on('error', (err: Error) => {
+				
+				// Send response body
+				// Note: sandbox request loads entire response in memory, which is fine for most assets
+				if (proxyRes.data) {
+					if (Buffer.isBuffer(proxyRes.data)) {
+						res.send(proxyRes.data);
+					} else if (typeof proxyRes.data === 'string') {
+						res.send(proxyRes.data);
+					} else {
+						res.json(proxyRes.data);
+					}
+				} else {
+					res.end();
+				}
+			} catch (err: unknown) {
+				// Handle proxy request errors
 				if (!res.headersSent) {
+					log(`Error proxying to assets endpoint: ${err instanceof Error ? err.message : String(err)}`);
 					res.status(500).json({ 
 						errors: [{ 
 							message: 'Failed to proxy request to assets endpoint',
@@ -153,14 +174,7 @@ export default {
 						}] 
 					});
 				}
-			});
-			
-			// Handle client abort
-			req.on('aborted', () => {
-				proxyReq.destroy();
-			});
-			
-			proxyReq.end();
+			}
 		}
 
 		// Shared handler function for file lookup by field
@@ -205,7 +219,7 @@ export default {
 				
 				// Proxy to the default assets endpoint with the file ID
 				// This ensures all default checks, caching, and behavior are preserved
-				proxyToAssetsEndpoint(file.id, req, res);
+				await proxyToAssetsEndpoint(file.id, req, res);
 				
 			} catch (err: unknown) {
 				// Handle specific error types if needed
@@ -216,7 +230,7 @@ export default {
 				}
 				
 				// Log error for debugging but don't expose internal details
-				console.error(`Error in assets-by-${fieldName} endpoint:`, err);
+				log(`Error in assets-by-${fieldName} endpoint: ${err instanceof Error ? err.message : String(err)}`);
 				
 				if (!res.headersSent) {
 					res.sendStatus(404);
