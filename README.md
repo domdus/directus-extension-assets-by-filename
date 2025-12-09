@@ -11,7 +11,7 @@ Instead of requesting via file uuid:
 
 You can request with filename_disk:
 ```
-/fassets/product-photo.jpg?width=800
+/assetsf/product-photo.jpg?width=800
 ```
 And make it even shorter with a custom env variable:
 ```
@@ -114,7 +114,7 @@ All standard Directus transformation parameters work:
 
 1. Looks up the file in `directus_files` by the specified field
 2. Checks permissions using Directus's FilesService
-3. Proxies to the default `/assetsf/:uuid` endpoint with all query parameters preserved
+3. Proxies to the default `/assets/:uuid` endpoint with all query parameters preserved
 4. Forwards all headers, status codes, and response body (preserving cache behavior)
 
 ## Error Handling
