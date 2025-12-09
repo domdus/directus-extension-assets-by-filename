@@ -1,6 +1,26 @@
-/// <reference types="@directus/extensions/api.d.ts" />
-import { request as httpRequest, log } from 'directus:api';
 import type { Router, Request, Response } from 'express';
+
+// HTTP request function using fetch
+async function httpRequest(url: string, options?: { method?: string; headers?: Record<string, string> }): Promise<{
+	status: number;
+	statusText: string;
+	headers: Record<string, string>;
+	data: Buffer | string | any;
+}> {
+	const response = await fetch(url, {
+		method: options?.method || 'GET',
+		headers: options?.headers || {},
+	});
+	
+	const arrayBuffer = await response.arrayBuffer();
+	
+	return {
+		status: response.status,
+		statusText: response.statusText,
+		headers: Object.fromEntries(response.headers.entries()),
+		data: Buffer.from(arrayBuffer)
+	};
+}
 
 // Blacklist of Directus native endpoints that cannot be used as custom endpoint paths
 const RESERVED_ENDPOINTS = [
@@ -73,13 +93,11 @@ interface DirectusRequest extends Request {
 }
 
 export default {
-	id: process.env.ASSETS_FILENAME_ENDPOINT_PATH || 'assets',
+	id: process.env.ASSETS_FILENAME_ENDPOINT_PATH || 'assetsf',
 	handler: (router: Router, { env, services, getSchema }: EndpointContext) => {
 		// Validate endpoint path on handler initialization
 		const endpointPath = process.env.ASSETS_FILENAME_ENDPOINT_PATH;
 		validateEndpointPath(endpointPath);
-		
-		const assetsPathSeparator = process.env.ASSETS_FILENAME_ENDPOINT_PATH ? '' : '/_';
 		
 		// Proxy function that properly forwards all headers and status codes
 		// This preserves the cache strategy from the default assets endpoint
@@ -131,7 +149,7 @@ export default {
 			try {
 				// Use sandbox's request function (returns Promise with response object)
 				const proxyRes = await httpRequest(url, {
-					method: req.method || 'GET',
+					method: (req.method || 'GET') as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
 					headers: headers,
 				});
 				
@@ -166,7 +184,7 @@ export default {
 			} catch (err: unknown) {
 				// Handle proxy request errors
 				if (!res.headersSent) {
-					log(`Error proxying to assets endpoint: ${err instanceof Error ? err.message : String(err)}`);
+					console.log(`[directus-extension-assets-by-filename] Error proxying to assets endpoint: ${err instanceof Error ? err.message : String(err)}`);
 					res.status(500).json({ 
 						errors: [{ 
 							message: 'Failed to proxy request to assets endpoint',
@@ -230,7 +248,7 @@ export default {
 				}
 				
 				// Log error for debugging but don't expose internal details
-				log(`Error in assets-by-${fieldName} endpoint: ${err instanceof Error ? err.message : String(err)}`);
+				console.log(`[directus-extension-assets-by-filename] Error in endpoint: ${err instanceof Error ? err.message : String(err)}`);
 				
 				if (!res.headersSent) {
 					res.sendStatus(404);
@@ -238,19 +256,10 @@ export default {
 			}
 		}
 
-		if (process.env.ASSETS_FILENAME_ENDPOINT_PATH) {
-			// Endpoint: /a/:filename
-			router.get(`${assetsPathSeparator}/:filename`, async (req: DirectusRequest, res: Response) => {
-				const filename = req.params['filename'] as string;
-				await handleFileLookup(req, res, 'filename_disk', filename);
-			});
-		} else {
-			// Endpoint: /_/_/:filename
-			router.get(`${assetsPathSeparator}/_/:filename`, async (req: DirectusRequest, res: Response) => {
-				const filename = req.params['filename'] as string;
-				await handleFileLookup(req, res, 'filename_disk', filename);
-			});
-		}
+		router.get(`/:filename`, async (req: DirectusRequest, res: Response) => {
+			const filename = req.params['filename'] as string;
+			await handleFileLookup(req, res, 'filename_disk', filename);
+		});
 	}
 };
 

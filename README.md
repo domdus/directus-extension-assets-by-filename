@@ -11,7 +11,7 @@ Instead of requesting via file uuid:
 
 You can request with filename_disk:
 ```
-/assets/_/_/product-photo.jpg?width=800
+/fassets/product-photo.jpg?width=800
 ```
 And make it even shorter with a custom env variable:
 ```
@@ -58,7 +58,7 @@ Once installed, the extension automatically adds new endpoints. No additional co
 
 The extension provides short URL patterns:
 
-- `/assets/_/_/:filename_disk` - Lookup by `filename_disk`
+- `/assetsf/:filename_disk` - Lookup by `filename_disk`
 
 **Custom** (when `ASSETS_FILENAME_ENDPOINT_PATH` is set, e.g., to `mypath`):
 - `/mypath/:filename_disk` - Lookup by `filename_disk`
@@ -68,7 +68,7 @@ The extension provides short URL patterns:
 All standard Directus transformation parameters work with these endpoints. Simply append them as query parameters:
 
 ```
-/assets/_/_/my-image.jpg?width=800&height=600&fit=cover&quality=90&format=webp
+/assetsf/my-image.jpg?width=800&height=600&fit=cover&quality=90&format=webp
 ```
 
 **Custom:**
@@ -98,7 +98,7 @@ You can customize the endpoint path using the `ASSETS_FILENAME_ENDPOINT_PATH` en
 
 ```html
 <!-- Using filename_disk -->
-<img src="/assets/_/_/ccc1123d-a62a-454e-82d1-1c8a5dfc1acd.png" />
+<img src="/assetsf/ccc1123d-a62a-454e-82d1-1c8a5dfc1acd.png" />
 ```
 
 **Custom** (with `ASSETS_FILENAME_ENDPOINT_PATH=mypath`):
@@ -114,7 +114,7 @@ All standard Directus transformation parameters work:
 
 1. Looks up the file in `directus_files` by the specified field
 2. Checks permissions using Directus's FilesService
-3. Proxies to the default `/assets/:uuid` endpoint with all query parameters preserved
+3. Proxies to the default `/assetsf/:uuid` endpoint with all query parameters preserved
 4. Forwards all headers, status codes, and response body (preserving cache behavior)
 
 ## Error Handling
